@@ -1,0 +1,15 @@
+server:
+  port: 8081
+
+postgresql:
+  host: localhost
+  port: 6432
+  dbName: urls
+  user: user
+  password: postgres
+  maxConnection: 10
+  maxConnectionIdle: 30s
+
+urlShortener:
+  baseUrl: http://localhost:8081
+  length: 7
