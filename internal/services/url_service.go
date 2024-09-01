@@ -2,6 +2,8 @@ package services
 
 import (
 	"com.github/EnesHarman/url-shortener/config"
+	"com.github/EnesHarman/url-shortener/internal/kafka"
+	kafkaModel "com.github/EnesHarman/url-shortener/internal/kafka/model"
 	"com.github/EnesHarman/url-shortener/internal/model"
 	"com.github/EnesHarman/url-shortener/internal/repository"
 	"fmt"
@@ -14,17 +16,20 @@ type UrlService interface {
 	GetUrlByShortUrl(shortUrl string) (*model.Url, error)
 	GetUrls(page int, size int) ([]model.Url, error)
 	DeleteUrl(id int) error
+	PublishClickEvent(urlId int, userId string)
 }
 
 type UrlServiceImpl struct {
-	repository repository.UrlRepository
-	urlConfig  config.UrlShortenerConfig
+	repository    repository.UrlRepository
+	urlConfig     config.UrlShortenerConfig
+	eventProducer kafka.ClickEventProducer
 }
 
-func NewUrlService(repository repository.UrlRepository, urlConfig config.UrlShortenerConfig) UrlService {
+func NewUrlService(repository repository.UrlRepository, urlConfig config.UrlShortenerConfig, eventProducer kafka.ClickEventProducer) UrlService {
 	return &UrlServiceImpl{
-		repository: repository,
-		urlConfig:  urlConfig,
+		repository:    repository,
+		urlConfig:     urlConfig,
+		eventProducer: eventProducer,
 	}
 }
 
@@ -48,6 +53,15 @@ func (service UrlServiceImpl) AddUrl(url *model.Url) (string, error) {
 
 func (service UrlServiceImpl) DeleteUrl(id int) error {
 	return service.repository.DeleteUrl(id)
+}
+
+func (service UrlServiceImpl) PublishClickEvent(urlId int, userId string) {
+	event := kafkaModel.ClickEvent{
+		UserId: userId,
+		Ts:     time.Now(),
+		UrlId:  urlId,
+	}
+	service.eventProducer.Produce(event)
 }
 
 func (service UrlServiceImpl) generateRandomUrl() string {

@@ -11,6 +11,7 @@ type Config struct {
 	Server       ServerConfig
 	Postgresql   PostgresConfig
 	UrlShortener UrlShortenerConfig
+	Kafka        KafkaConfig
 }
 
 type ServerConfig struct {
@@ -30,6 +31,10 @@ type PostgresConfig struct {
 type UrlShortenerConfig struct {
 	BaseUrl string
 	Length  int
+}
+
+type KafkaConfig struct {
+	Broker string
 }
 
 func LoadConfig() (*Config, error) {

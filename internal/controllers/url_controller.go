@@ -90,5 +90,6 @@ func (ctrl UrlControllerImpl) RedirectUrl(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
+	ctrl.urlService.PublishClickEvent(url.Id, "testUser44")
 	c.Redirect(http.StatusMovedPermanently, url.RealUrl)
 }
